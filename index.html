@@ -1719,6 +1719,61 @@
             collapsed: true,
         });
         lay.addTo(map);
+function obtenerCapas(tree, lista = []) {
+    tree.forEach(function(item) {
+        if (item.layer) {
+            lista.push(item.layer);
+        }
+        if (item.children) {
+            obtenerCapas(item.children, lista);
+        }
+    });
+    return lista;
+}
+
+const listaCapas = obtenerCapas(overlaysTree);
+
+function guardarCapas() {
+
+    const estado = {};
+
+    listaCapas.forEach(function(layer) {
+        estado[layer.options.layerName] = map.hasLayer(layer);
+    });
+
+    localStorage.setItem("estadoCapas", JSON.stringify(estado));
+
+}
+
+function restaurarCapas() {
+
+    const estado = JSON.parse(localStorage.getItem("estadoCapas"));
+
+    if (!estado) return;
+
+    listaCapas.forEach(function(layer) {
+
+        const visible = estado[layer.options.layerName];
+
+        if (visible === true && !map.hasLayer(layer))
+            map.addLayer(layer);
+
+        if (visible === false && map.hasLayer(layer))
+            map.removeLayer(layer);
+
+    });
+
+}
+		restaurarCapas();
+		setTimeout(function(){
+
+    document.querySelector(".leaflet-control-layers").addEventListener("change", function(){
+
+        guardarCapas();
+
+    });
+
+},500);
         setBounds();
         resetLabels([layer_BP_2,layer_Autopistas_5,layer_CallejeroJerarqua_7]);
         map.on("zoomend", function(){
