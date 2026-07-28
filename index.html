@@ -65,7 +65,7 @@
             }
         }
         var map = L.map('map', {
-            zoomControl:true, maxZoom:28, minZoom:1, preferCanvas:true
+            zoomControl:false, maxZoom:28, minZoom:1, preferCanvas:true
         }).fitBounds([[-34.7787979195361,-58.57908252889073],[-34.4067500746169,-58.14235042137588]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
@@ -1719,6 +1719,47 @@
             collapsed: true,
         });
         lay.addTo(map);
+			
+		function guardarCapas() {
+
+    var estado = {};
+
+    map.eachLayer(function(layer){
+
+        if(layer.options && layer.options.layerName){
+            estado[layer.options.layerName] = map.hasLayer(layer);
+        }
+
+    });
+
+    localStorage.setItem("estadoCapas", JSON.stringify(estado));
+
+}
+			function restaurarCapas(){
+
+    var estado = localStorage.getItem("estadoCapas");
+
+    if(!estado) return;
+
+    estado = JSON.parse(estado);
+
+    map.eachLayer(function(layer){
+
+        if(layer.options && layer.options.layerName){
+
+            if(estado[layer.options.layerName] === false){
+                map.removeLayer(layer);
+            }
+
+        }
+
+    });
+
+}
+restaurarCapas();
+
+map.on("overlayadd", guardarCapas);
+map.on("overlayremove", guardarCapas);
         setBounds();
         resetLabels([layer_BP_2,layer_Autopistas_5,layer_CallejeroJerarqua_7]);
         map.on("zoomend", function(){
